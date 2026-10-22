@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SmartCampus</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>SmartCampus</h1>
+    <span id="estado" class="estado">Comprobando...</span>
+  </header>
+
+  <main>
+    <p id="mensaje" class="mensaje" hidden></p>
+
+    <section>
+      <h2>Aulas</h2>
+      <table>
+        <thead>
+          <tr><th>ID</th><th>Nombre</th><th>Edificio</th><th>Capacidad</th><th>Equipamiento</th><th></th></tr>
+        </thead>
+        <tbody id="tabla-aulas"></tbody>
+      </table>
+
+      <form id="form-aula">
+        <h3>Nueva aula</h3>
+        <input name="nombre" placeholder="Nombre" required>
+        <input name="edificio" placeholder="Edificio" required>
+        <input name="capacidad" type="number" min="1" placeholder="Capacidad" required>
+        <input name="equipamiento" placeholder="Equipamiento (separado por comas)">
+        <button type="submit">Añadir aula</button>
+      </form>
+    </section>
+
+    <section>
+      <h2>Reservas</h2>
+      <table>
+        <thead>
+          <tr><th>ID</th><th>Aula</th><th>Usuario</th><th>Fecha</th><th>Inicio</th><th>Fin</th><th></th></tr>
+        </thead>
+        <tbody id="tabla-reservas"></tbody>
+      </table>
+
+      <form id="form-reserva">
+        <h3>Nueva reserva</h3>
+        <select name="aula_id" id="select-aulas" required></select>
+        <input name="usuario" placeholder="Usuario" required>
+        <input name="fecha" type="date" required>
+        <input name="hora_inicio" type="time" required>
+        <input name="hora_fin" type="time" required>
+        <button type="submit">Reservar</button>
+      </form>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
