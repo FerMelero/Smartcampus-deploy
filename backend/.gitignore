@@ -1,0 +1,10 @@
+.env
+__pycache__/
+.venv/
+.pytest_cache/
+.ruff_cache/
+commit-log.txt
+*.db
+venv
+*.db
+app/__pycache__
