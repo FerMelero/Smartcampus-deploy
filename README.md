@@ -66,14 +66,18 @@ pytest
 
 ### Hecho y probado
 - Backend FastAPI con PostgreSQL y todos los endpoints (obligatorios y opcionales).
+- Frontend con nginx: listado, alta y borrado de aulas y reservas.
 - `database/init.sql` con tablas y datos de ejemplo.
 - Dockerfiles de backend y frontend.
 - `docker-compose.yml` con los tres servicios: red propia, volumen para la BD, healthchecks, `depends_on` con `service_healthy` y `restart: unless-stopped`.
-- Comunicación frontend → backend → BD funcionando en Compose.
+- Pruebas de Docker Compose con capturas en `docs/capturas/`:
+  - construcción, `docker compose ps` y aplicación funcionando;
+  - comunicación frontend → backend → BD;
+  - persistencia de datos tras `docker compose down` y `up`;
+  - caída del backend: `docker stop`/`kill` no lo reinician (parada manual) y un fallo real sí, gracias a `restart: unless-stopped`.
 
 ### Pendiente
-- Pruebas de Compose con evidencias: persistencia tras `down`/`up` y caída del backend (`docker stop`).
 - Manifiestos de Kubernetes (`k8s/`): namespace, ConfigMap, Secret, StatefulSet de la BD, Deployments y Services.
-- Pruebas en Minikube: escalado, self-healing y cambio de ConfigMap.
-- Memoria técnica: comparativa Compose vs Kubernetes y respuestas a las 20 preguntas.
-- Capturas de evidencias.
+- Pruebas en Minikube con capturas: despliegue, escalado del backend, self-healing y cambio del ConfigMap.
+- Memoria técnica: arquitectura, comparativa Compose vs Kubernetes, respuestas a las 20 preguntas, problemas y conclusiones.
+- Completar `docs/problemas.md` y actualizar este README con la parte de Kubernetes.
