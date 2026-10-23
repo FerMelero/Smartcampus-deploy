@@ -10,7 +10,6 @@ DB_PASSWORD = os.getenv("DB_PASSWORD", "")
 
 
 def get_db_dsn() -> str:
-    """Se lee del entorno en cada llamada para que los tests puedan cambiarlo."""
     return (
         f"host={os.getenv('DB_HOST', DB_HOST)} "
         f"port={os.getenv('DB_PORT', DB_PORT)} "
