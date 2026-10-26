@@ -35,7 +35,7 @@ Navegador --> frontend (nginx) --/api/--> backend (FastAPI) --SQL--> database (P
 
 `/health` y `/health/db` están separados a propósito: el primero indica que el proceso está vivo (liveness) y el segundo que además puede hablar con la base de datos (readiness).
 
-**Decisión: el navegador solo habla con nginx.** El frontend llama siempre a rutas relativas (`/api/...`) y nginx las reenvía al backend. Así no hay problemas de CORS y el navegador no necesita resolver el nombre interno del backend, que solo existe dentro de la red de Docker (o del clúster en Kubernetes). La dirección del backend se configura con la variable `BACKEND_URL`, de modo que la misma imagen sirve en Compose (`http://backend:8000`) y, más adelante, en Kubernetes.
+**Decisión:** el navegador solo habla con nginx, que reenvía `/api/` al backend. Así no hay problemas de CORS y la dirección del backend se cambia con `BACKEND_URL`, sin tocar la imagen.
 
 ## 3. Despliegue con Docker
 
@@ -105,12 +105,12 @@ Se usa Minikube (driver Docker) con un perfil propio, `smartcampus`, y todos los
 
 ### 4.2 Decisiones
 
-- **StatefulSet para la BD.** Un Deployment trata sus Pods como intercambiables y sin identidad. Una base de datos necesita un nombre estable (`database-0`) y un volumen propio que vuelva a asignarse al mismo Pod si se recrea. El StatefulSet da ambas cosas con `volumeClaimTemplates`. Con una sola réplica no hay replicación de datos, pero es la elección correcta para un servicio con estado.
-- **Comunicación por Services, no por IP.** El backend usa `DB_HOST=database-service` y el frontend `BACKEND_URL=http://backend-service:8000`. El Service da un nombre y una IP estables y reparte las peticiones entre los Pods del backend.
-- **ConfigMap.** Guarda la configuración no sensible. El backend la carga entera con `envFrom`, el frontend toma `BACKEND_URL` con `configMapKeyRef` y la BD lee `DB_NAME`.
-- **Secret.** Guarda `DB_USER` y `DB_PASSWORD`, que se inyectan como variables de entorno y no aparecen en los Deployments ni en las imágenes. Sus valores van en base64, que no es cifrado: cualquiera con permiso de lectura sobre Secrets del namespace puede decodificarlos, y por defecto se almacenan sin cifrar en etcd. Un sistema especializado (HashiCorp Vault, AWS Secrets Manager) añade cifrado, control de acceso fino, rotación de credenciales y auditoría. Los valores del repositorio son solo de desarrollo; en un entorno real el Secret se crearía fuera de Git.
-- **Probes.** La readiness del backend consulta `/health/db`: un Pod que no llega a la BD no recibe tráfico. La liveness consulta `/health`: si el proceso no responde, se reinicia el contenedor.
-- **Exposición.** `frontend-service` es NodePort (30080). Con el driver Docker el nodo no es accesible directamente desde el equipo, así que `minikube service` abre un túnel y da una URL local (`127.0.0.1:puerto`).
+- **StatefulSet para la BD.** Una BD necesita un nombre fijo (`database-0`) y un disco propio que conserve al recrearse el Pod; un Deployment no lo garantiza.
+- **Services, no IPs.** Los Pods cambian de IP al recrearse, así que el backend usa `database-service` y el frontend `backend-service`.
+- **ConfigMap.** Guarda la configuración no sensible (`APP_ENV`, `DB_HOST`, `BACKEND_URL`...), que los Pods leen como variables de entorno.
+- **Secret.** Guarda usuario y contraseña de la BD, fuera de las imágenes y de los Deployments. Va en base64, que no es cifrado: lo decodifica cualquiera con acceso al namespace. Vault o AWS Secrets Manager añaden cifrado, permisos finos y rotación. Los valores del repositorio son de desarrollo.
+- **Probes.** La readiness (`/health/db`) evita enviar tráfico a un Pod sin BD; la liveness (`/health`) reinicia el contenedor si no responde.
+- **Exposición.** NodePort 30080. Con el driver Docker, `minikube service` abre un túnel y da una URL local.
 
 ### 4.3 Cómo desplegarlo
 
