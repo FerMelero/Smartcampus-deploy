@@ -1,0 +1,14 @@
+# NodePort: expone el frontend fuera del clúster
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend-service
+  namespace: smartcampus
+spec:
+  type: NodePort
+  selector:
+    app: frontend
+  ports:
+    - port: 80
+      targetPort: 80
+      nodePort: 30080

@@ -58,3 +58,38 @@ docker inspect smartcampus-backend --format 'restarts={{.RestartCount}}'
 Resultado: `restarts=1` y el backend vuelve a estar `Up` (primero `health: starting` y después `healthy`). Para recuperar un contenedor parado a mano basta con `docker compose up -d`.
 
 **Lección:** la política `restart` cubre caídas inesperadas, no paradas manuales. Sin ella, ni siquiera un fallo real se recuperaría. En Kubernetes la situación es distinta: un pod borrado a mano sí es recreado porque el ReplicaSet mantiene el estado deseado.
+
+## 3. `minikube image build` falla: "open Dockerfile: no such file or directory"
+
+**Categoría:** construcción de imágenes (Kubernetes)
+
+**Síntoma**
+- `minikube -p smartcampus image build -t smartcampus-frontend:1.0 frontend` terminaba con `failed to read dockerfile: open Dockerfile: no such file or directory`, aunque `frontend/Dockerfile` existía. El del backend sí se construía.
+
+**Diagnóstico**
+- `frontend/.dockerignore` contenía la línea `Dockerfile`, que excluye el propio Dockerfile del contexto de construcción. `docker build` lo tolera porque lo envía aparte, pero el build de Minikube (BuildKit) no.
+
+**Solución**
+Quitar `Dockerfile` de `frontend/.dockerignore` y volver a construir:
+
+```
+minikube -p smartcampus image build -t smartcampus-frontend:1.0 frontend
+```
+
+**Lección:** no hace falta excluir el Dockerfile en `.dockerignore`, y si se excluye, el mismo build puede funcionar con Docker y fallar con otra herramienta.
+
+## 4. Compose no arranca si ya hay otro proyecto usando el mismo nombre de contenedor y puerto
+
+**Categoría:** despliegue (Docker Compose)
+
+**Síntoma**
+- `docker compose up -d --build` daba `The container name "/smartcampus-backend" is already in use` y el backend no se creaba.
+
+**Diagnóstico**
+- `docker ps -a` mostraba un contenedor `smartcampus-backend` de otro proyecto (otro directorio de Compose) ya en marcha y publicando el puerto 8000.
+- El `docker-compose.yml` fija `container_name`, así que dos proyectos con los mismos nombres no pueden convivir en el mismo Docker.
+
+**Solución**
+No tocar el otro proyecto y trabajar el despliegue de Kubernetes en un clúster aparte. Para ejecutar Compose a la vez que el otro habría que parar el otro proyecto o quitar `container_name` y cambiar los puertos publicados.
+
+**Lección:** en Kubernetes este choque no existe: los recursos viven en un namespace propio y los Pods no usan nombres fijos.
