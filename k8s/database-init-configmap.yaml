@@ -1,0 +1,40 @@
+# init.sql de database/ como ConfigMap, para montarlo en la BD (equivale al volumen de Compose)
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: database-init
+  namespace: smartcampus
+data:
+  init.sql: |
+    -- Esquema de SmartCampus para PostgreSQL.
+    -- La imagen oficial de postgres ejecuta este fichero la primera vez que arranca con
+    -- el volumen vacío (montado en /docker-entrypoint-initdb.d/). Es idempotente.
+    
+    CREATE TABLE IF NOT EXISTS rooms (
+        id           INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+        nombre       TEXT     NOT NULL,
+        edificio     TEXT     NOT NULL,
+        capacidad    INTEGER  NOT NULL CHECK (capacidad > 0),
+        equipamiento TEXT[]   NOT NULL DEFAULT '{}'
+    );
+    
+    CREATE TABLE IF NOT EXISTS bookings (
+        id          INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+        aula_id     INTEGER NOT NULL REFERENCES rooms(id) ON DELETE CASCADE,
+        usuario     TEXT    NOT NULL,
+        fecha       DATE    NOT NULL,
+        hora_inicio TIME    NOT NULL,
+        hora_fin    TIME    NOT NULL,
+        CHECK (hora_inicio < hora_fin)
+    );
+    
+    CREATE INDEX IF NOT EXISTS idx_bookings_aula_fecha ON bookings (aula_id, fecha);
+    
+    -- Datos de ejemplo (solo si la tabla está vacía) para que el frontend tenga algo que mostrar.
+    INSERT INTO rooms (nombre, edificio, capacidad, equipamiento)
+    SELECT 'Laboratorio de Robótica', 'Edificio A', 30, ARRAY['ordenadores', 'robots', 'impresora 3D']
+    WHERE NOT EXISTS (SELECT 1 FROM rooms);
+    
+    INSERT INTO bookings (aula_id, usuario, fecha, hora_inicio, hora_fin)
+    SELECT (SELECT MIN(id) FROM rooms), 'ana', CURRENT_DATE + 1, '10:00', '12:00'
+    WHERE NOT EXISTS (SELECT 1 FROM bookings) AND EXISTS (SELECT 1 FROM rooms);

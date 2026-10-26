@@ -18,7 +18,8 @@ Navegador --> frontend (nginx) --/api/--> backend (FastAPI) --SQL--> database (P
 backend/          API (app/, tests/, Dockerfile)
 frontend/         web/ (HTML, CSS, JS), nginx.conf.template, Dockerfile
 database/         init.sql
-docs/             problemas.md (problemas encontrados y soluciones)
+k8s/              manifiestos de Kubernetes (namespace, ConfigMap, Secret, BD, backend, frontend)
+docs/             memoria.md, problemas.md y capturas/
 docker-compose.yml
 .env.example
 ```
@@ -43,6 +44,29 @@ docker compose down -v      # borra también el volumen
 
 Si el puerto 5432 de tu máquina está ocupado, cambia `DB_PUBLISHED_PORT` en `.env` (ver `docs/problemas.md`).
 
+## Cómo ejecutarlo (Kubernetes)
+
+Con Minikube y `kubectl` instalados:
+
+```bash
+minikube start -p smartcampus --driver=docker
+minikube -p smartcampus image build -t smartcampus-backend:1.0 backend
+minikube -p smartcampus image build -t smartcampus-frontend:1.0 frontend
+kubectl apply -f k8s/namespace.yaml
+kubectl apply -f k8s/
+kubectl -n smartcampus get pods
+minikube -p smartcampus service frontend-service -n smartcampus
+```
+
+Escalar el backend y comprobar el self-healing:
+
+```bash
+kubectl -n smartcampus scale deployment backend --replicas=4
+kubectl -n smartcampus delete pod <nombre-del-pod>
+```
+
+Borrar todo: `kubectl delete namespace smartcampus`. Los valores de `k8s/secret.yaml` son de desarrollo.
+
 ## Endpoints del backend
 
 | Método | Ruta | Descripción |
@@ -66,14 +90,18 @@ pytest
 
 ### Hecho y probado
 - Backend FastAPI con PostgreSQL y todos los endpoints (obligatorios y opcionales).
+- Frontend con nginx: listado, alta y borrado de aulas y reservas.
 - `database/init.sql` con tablas y datos de ejemplo.
 - Dockerfiles de backend y frontend.
 - `docker-compose.yml` con los tres servicios: red propia, volumen para la BD, healthchecks, `depends_on` con `service_healthy` y `restart: unless-stopped`.
-- Comunicación frontend → backend → BD funcionando en Compose.
+- Pruebas de Docker Compose con capturas en `docs/capturas/`:
+  - construcción, `docker compose ps` y aplicación funcionando;
+  - comunicación frontend → backend → BD;
+  - persistencia de datos tras `docker compose down` y `up`;
+  - caída del backend: `docker stop`/`kill` no lo reinician (parada manual) y un fallo real sí, gracias a `restart: unless-stopped`.
+- Manifiestos de Kubernetes en `k8s/`: namespace, ConfigMap, Secret, StatefulSet de la BD, Deployments y Services.
+- Pruebas en Minikube con capturas: despliegue, escalado del backend, self-healing y cambio del ConfigMap.
+- Memoria técnica completa en `docs/memoria.md`: arquitectura, comparativa, las 20 preguntas, problemas y conclusiones.
 
 ### Pendiente
-- Pruebas de Compose con evidencias: persistencia tras `down`/`up` y caída del backend (`docker stop`).
-- Manifiestos de Kubernetes (`k8s/`): namespace, ConfigMap, Secret, StatefulSet de la BD, Deployments y Services.
-- Pruebas en Minikube: escalado, self-healing y cambio de ConfigMap.
-- Memoria técnica: comparativa Compose vs Kubernetes y respuestas a las 20 preguntas.
-- Capturas de evidencias.
+- Revisión final de la memoria y entrega.

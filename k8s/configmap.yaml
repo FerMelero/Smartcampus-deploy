@@ -1,0 +1,12 @@
+# Configuración no sensible
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: smartcampus-config
+  namespace: smartcampus
+data:
+  APP_ENV: development
+  DB_HOST: database-service
+  DB_PORT: "5432"
+  DB_NAME: smartcampus
+  BACKEND_URL: http://backend-service:8000

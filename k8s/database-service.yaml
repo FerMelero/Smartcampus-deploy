@@ -1,0 +1,13 @@
+# Headless (sin IP propia): el nombre resuelve directamente al Pod de la BD
+apiVersion: v1
+kind: Service
+metadata:
+  name: database-service
+  namespace: smartcampus
+spec:
+  clusterIP: None
+  selector:
+    app: database
+  ports:
+    - port: 5432
+      targetPort: 5432
