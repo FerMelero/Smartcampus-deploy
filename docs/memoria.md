@@ -220,11 +220,15 @@ El backend vuelve a tener 2 Pods en `Running`.
 
 **Experimento 6: cambio de ConfigMap**
 
-![ConfigMap cambiado, Pod sin cambios](capturas/18-k8s-configmap-sin-reiniciar.png)
+![ConfigMap editado](capturas/18-k8s-configmap-editar.png)
 
-Se cambia `APP_ENV` de `development` a `production` en el ConfigMap. El ConfigMap ya dice `production`, pero el Pod en ejecución sigue con `APP_ENV=development`: las variables de entorno se leen al arrancar el contenedor y no se actualizan en caliente.
+Se edita `k8s/configmap.yaml` y se cambia `APP_ENV` de `development` a `production`.
 
-![Rollout y valor nuevo](capturas/19-k8s-configmap-tras-rollout.png)
+![Apply sin reiniciar](capturas/19-k8s-configmap-apply-sin-reiniciar.png)
+
+`kubectl apply -f configmap.yaml` actualiza el ConfigMap (`configured`), pero el Pod en ejecución sigue con `APP_ENV=development`: las variables de entorno se leen al arrancar el contenedor y no se actualizan en caliente.
+
+![Rollout y valor nuevo](capturas/20-k8s-configmap-tras-rollout.png)
 
 `kubectl rollout restart deployment backend` sustituye los Pods por otros nuevos de forma progresiva y estos ya tienen `APP_ENV=production`. Los Pods que usan el ConfigMap solo ven el cambio al recrearse.
 
