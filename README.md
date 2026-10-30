@@ -105,3 +105,37 @@ pytest
 
 ### Pendiente
 - Revisión final de la memoria y entrega.
+
+## Capturas
+
+La explicación de cada prueba está en [docs/memoria.md](docs/memoria.md).
+
+### Docker Compose
+
+| | |
+|---|---|
+| **01** Construcción de las imágenes | ![01](docs/capturas/01-compose-build.png) |
+| **02** `docker compose ps`: servicios en ejecución y `healthy` | ![02](docs/capturas/02-compose-ps.png) |
+| **03** Aplicación funcionando | ![03](docs/capturas/03-web-funcionando.png) |
+| **04** `curl` a `/health`, `/health/db` y `/rooms` | ![04](docs/capturas/04-curl-health-rooms.png) |
+| **05** Persistencia: creación de un aula | ![05](docs/capturas/05-persistencia-crear-aula.png) |
+| **06** Persistencia: datos tras `down` y `up` | ![06](docs/capturas/06-persistencia-tras-down-up.png) |
+| **07** Fallo: backend parado con `docker stop`/`kill` | ![07](docs/capturas/07-fallo-parar-backend.png) |
+| **08** Fallo: web con el backend parado | ![08](docs/capturas/08-fallo-front-backend-parado.png) |
+| **09** Fallo: recuperación manual | ![09](docs/capturas/09-fallo-recuperacion-manual.png) |
+| **10** Fallo: reinicio automático con `restart` | ![10](docs/capturas/10-fallo-restart-automatico.png) |
+
+### Kubernetes
+
+| | |
+|---|---|
+| **11** `kubectl apply` | ![11](docs/capturas/11-k8s-apply.png) |
+| **12** Pods, services y deployments | ![12](docs/capturas/12-k8s-pods-services-deployments.png) |
+| **13** Aplicación funcionando en Kubernetes | ![13](docs/capturas/13-k8s-web-funcionando.png) |
+| **14** Escalado del backend a 4 réplicas | ![14](docs/capturas/14-k8s-escalado-4.png) |
+| **15** Escalado de vuelta a 2 réplicas | ![15](docs/capturas/15-k8s-escalado-2.png) |
+| **16** Self-healing: borrado de un pod | ![16](docs/capturas/16-k8s-selfhealing-delete-pod.png) |
+| **17** Self-healing: pod recreado | ![17](docs/capturas/17-k8s-selfhealing-recuperado.png) |
+| **18** ConfigMap: edición | ![18](docs/capturas/18-k8s-configmap-editar.png) |
+| **19** ConfigMap: `apply` sin reiniciar los pods | ![19](docs/capturas/19-k8s-configmap-apply-sin-reiniciar.png) |
+| **20** ConfigMap: valor nuevo tras `rollout restart` | ![20](docs/capturas/20-k8s-configmap-tras-rollout.png) |
